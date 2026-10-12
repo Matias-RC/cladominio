@@ -1,0 +1,64 @@
+# =====================================================================
+#  Cachipún Evolución — apariencia
+# =====================================================================
+
+ventana:
+  titulo: "Cachipún Evolución: el dominio de los clados"
+  ancho: 1280               # resolución lógica; la ventana se escala sola
+  alto: 720
+  fps: 60
+
+fuentes:
+  # Nombres de fuentes del sistema (pygame.font.get_fonts()). Se usa la
+  # primera que exista. Si ninguna existe se usa la fuente por defecto.
+  titulo: [inkfree, segoeprint, comicsansms]
+  texto: [inkfree, segoeprint, comicsansms]
+  tamanos:
+    enorme: 56
+    grande: 36
+    media: 26
+    normal: 21
+    chica: 17
+
+colores:
+  fondo: [250, 249, 245]
+  tinta: [30, 30, 30]
+  tinta_suave: [120, 120, 120]
+  linea: [60, 60, 60]
+  panel: [240, 238, 232]
+  actual: [46, 160, 67]        # verde: estado actual
+  objetivo: [214, 48, 49]      # rojo: estado objetivo
+  boton: [255, 255, 255]
+  boton_hover: [235, 245, 255]
+  boton_borde: [30, 30, 30]
+  boton_deshabilitado: [200, 200, 200]
+  acento: [52, 120, 220]
+  gana: [46, 160, 67]
+  pierde: [214, 48, 49]
+  empata: [150, 150, 150]
+  diversidad: [46, 160, 67]
+  diversidad_gastada: [180, 220, 180]
+  cromo: [120, 70, 200]
+  sombra: [0, 0, 0, 60]
+  fenotipos:
+    piedra: [120, 110, 100]
+    tijera: [52, 120, 220]
+    fosforo: [235, 120, 30]
+    papel: [190, 170, 90]
+    pistola: [90, 60, 140]
+
+# Sprites opcionales. Si el archivo existe se usa; si no, se dibuja a mano.
+# Rutas relativas a la carpeta del proyecto.
+sprites:
+  cromo: assets/cromo.png                 # icono de cromos (se escala a ~28x28)
+  fenotipos:
+    piedra: assets/fenotipos/piedra.png   # iconos (recomendado 64x64, fondo transparente)
+    tijera: assets/fenotipos/tijera.png
+    fosforo: assets/fenotipos/fosforo.png
+    papel: assets/fenotipos/papel.png
+    pistola: assets/fenotipos/pistola.png
+  carta_fondo: assets/carta.png           # fondo de carta (recomendado 120x160)
+
+animacion:
+  segundos_por_duelo: 0.45
+  efecto_boceto: true          # líneas ligeramente temblorosas estilo boceto

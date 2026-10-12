@@ -1,0 +1,152 @@
+# =====================================================================
+#  Cachipún Evolución — reglas y balance
+#  Todo lo que es "perilla de balance" vive aquí. Los valores marcados
+#  como [propuesta] en el README están todos expuestos.
+# =====================================================================
+
+jugadores:
+  cromos_iniciales: 24
+  especies_iniciales: 1
+  max_especies: 6 # límite de especies vivas por jugador
+  cromos_minimos: 0 # los cromos no bajan de este valor
+
+info_publica:
+  cromos_rival: true # mostrar los cromos del rival
+
+# ---------------------------------------------------------------------
+#  Fenotipos (pentágono)
+# ---------------------------------------------------------------------
+fenotipos:
+  # Orden en el pentágono (sentido horario, empezando arriba).
+  # Con este orden cada fenotipo vence a los 2 siguientes.
+  orden: [piedra, tijera, fosforo, papel, pistola]
+  nombres:
+    piedra: Piedra
+    tijera: Tijera
+    fosforo: Fósforo
+    papel: Papel
+    pistola: Pistola
+  vence:
+    piedra: [tijera, fosforo] # rompe la tijera, apaga el fósforo
+    tijera: [fosforo, papel] # corta el fósforo, corta el papel
+    fosforo: [papel, pistola] # quema el papel, enciende la pólvora
+    papel: [pistola, piedra] # atasca la pistola, envuelve la piedra
+    pistola: [piedra, tijera] # revienta piedra y tijera
+  # Texto de la revelación: "<ganador> <verbo> <perdedor>". Opcional (por defecto "vence a").
+  verbos:
+    piedra: { tijera: rompe, fosforo: apaga }
+    tijera: { fosforo: corta, papel: corta }
+    fosforo: { papel: quema, pistola: enciende la pólvora de }
+    papel: { pistola: legisla contra, piedra: envuelve }
+    pistola: { piedra: revienta, tijera: revienta }
+  # Adyacencias (para coste de selección y especiación parapátrica).
+  # "auto" = vecinos en el pentágono según `orden`.
+  # También puede ser un mapa explícito:  piedra: [tijera, pistola]
+  adyacencias: auto
+
+# ---------------------------------------------------------------------
+#  Diversidad (por especie)
+# ---------------------------------------------------------------------
+diversidad:
+  inicial: 50
+  maxima: 100
+  minima_tras_gasto: 5 # no se puede gastar diversidad por debajo de este valor
+  regeneracion_por_ronda: 10 # diversidad permanente extra al final de cada ronda
+
+# ---------------------------------------------------------------------
+#  Expresión fenotípica
+# ---------------------------------------------------------------------
+expresion:
+  prob_dominante: 0.75 # prob. de que una carta muestre el dominante (generalistas)
+
+# ---------------------------------------------------------------------
+#  Etapa 1 — Selección natural
+#  Coste = base * (1 si el cambio es a un nodo adyacente, si no factor_no_adyacente)
+# ---------------------------------------------------------------------
+seleccion:
+  cambio_dominante: { cromos: 4, diversidad: 10 }
+  cambio_recesivo: { cromos: 2, diversidad: 5 }
+  factor_no_adyacente: 1.5
+
+# ---------------------------------------------------------------------
+#  Etapa 2 — Decisión de combate y combate
+# ---------------------------------------------------------------------
+combate:
+  k: 12 # cromos en juego
+  cartas: 6 # cartas en la mano (= duelos por combate)
+  factor_rechazo_unilateral: 1 # el que acepta cuando el otro rechaza gana factor*k
+  # Cómo se elige de qué especie sale cada carta:
+  #   diversidad_efectiva (diversidad - gastada), diversidad, uniforme
+  peso_especie: diversidad_efectiva
+  # interactivo: duelo a duelo, cada jugador arrastra la carta que quiere jugar y puede descartar.
+  # automatico:  las cartas se juegan solas en el orden en que salieron (más rápido).
+  modo: interactivo
+  descartes: 5 # cartas que cada jugador puede descartar y volver a robar del pool, por combate
+  diversidad_por_duelo_perdido: 5
+  diversidad_por_duelo_ganado: 3
+
+paz:
+  bono_diversidad: 30 # paz mutua: +X% a cada especie
+  anula_pociones_activadas: true # paz mutua: las pociones activadas esta ronda se pierden
+
+# ---------------------------------------------------------------------
+#  Etapa 3 — Mercado
+#  Los `efecto` de las pociones se implementan en cladominio/core/efectos.py
+# ---------------------------------------------------------------------
+mercado:
+  ingreso_por_ronda: 3 # n
+  articulos:
+    cuello_botella:
+      nombre: Cuello de botella
+      tipo: pocion
+      precio: 6
+      duracion: 3
+      efecto: cuello_botella
+      params: { diversidad_rival_por_derrota: 2 }
+      descripcion: "Cuando esta especie pierde un duelo, la especie rival que ganó pierde diversidad."
+    efecto_fundador:
+      nombre: Efecto fundador
+      tipo: pocion
+      precio: 5
+      duracion: 3
+      efecto: efecto_fundador
+      params: { diversidad_perdida: 1, cromos_ganados: 0.5 }
+      descripcion: "Cuando esta especie pierde, pierde poca diversidad y gana cromos; el rival no gana nada."
+    carta_mutacion:
+      nombre: Carta de mutación
+      tipo: mutacion
+      precio: 3
+      descripcion: "Sube la probabilidad de cladogénesis. Acumulable."
+    peripatrico:
+      nombre: Peripátrico
+      tipo: potenciador
+      precio: 10
+      elegir_madre: true # tú eliges la especie madre
+      cambio_gratis_hija: ninguno # ninguno | adyacente | libre
+      descripcion: "Intento de cladogénesis. Eliges la especie madre; la hija hereda su fenotipo."
+    parapatrico:
+      nombre: Parapátrico
+      tipo: potenciador
+      precio: 6
+      elegir_madre: false # la madre se elige al azar
+      cambio_gratis_hija: adyacente
+      descripcion: "Intento de cladogénesis más barato. Madre al azar; la hija puede moverse gratis a un nodo adyacente."
+
+# ---------------------------------------------------------------------
+#  Cladogénesis
+# ---------------------------------------------------------------------
+cladogenesis:
+  prob_base: 0.30
+  prob_por_carta: 0.15 # por cada carta de mutación
+  prob_por_fallo: 0.10 # "piso": cada fallo seguido suma esto
+  prob_maxima: 0.95
+  fraccion_hija: 0.5 # parte de la diversidad de la madre que se lleva la hija
+  diversidad_minima_madre: 10
+  consume_cartas: al_intentar # al_intentar | al_exito
+
+# ---------------------------------------------------------------------
+#  Victoria
+# ---------------------------------------------------------------------
+victoria:
+  fenotipos_distintos: 5 # dominantes distintos entre especies vivas
+  max_rondas: 0 # 0 = sin límite; si se alcanza gana quien cubra más fenotipos
